@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=UTF-8>
+<meta name=viewport content="width=device-width, initial-scale=1.0">
+<title>Welcome to React!</title>
+<link rel=stylesheet href=index.css>
+</head>
+<body>
+<div id=mydiv></div>
+<script src=https://unpkg.com/react@16/umd/react.production.min.js></script>
+<script src=https://unpkg.com/react-dom@16/umd/react-dom.production.min.js></script>
+<script src=https://unpkg.com/babel-standalone@6.15.0/babel.min.js></script>
+<script type=text/babel>
+            
+      class Hello extends React.Component {
+        constructor(){
+            super();
+            this.state = {
+                candidates: [],
+                isload:false,
+                search:'',
+                tmp:[],
+                message:'Loading...'
+            }
+        }
+        componentDidMount(){
+            fetch("https://s3-ap-southeast-1.amazonaws.com/he-public-data/users49b8675.json", {
+                "method": "GET"})
+            .then(response => response.json())
+            .then(data=>{
+                data = data.map(key=>{
+                    key.selected = true;
+                    return key;
+                })
+               this.setState({candidates: data,tmp:data});
+               this.setState({isload: true});
+            })
+            .catch(err => {
+                console.error(err);
+            });
+        }
+        showCandidateList = () =>{
+            if(this.state.isload && this.state.candidates.length>0){
+                return(
+                    <div className="card">{
+                        this.state.candidates.map((c,i)=>{
+                            return(
+                               <div>
+                                {
+                                    c.selected && <div className="maincard">
+                                    <div key={c.id} className="cardcontainer">
+                                    <img className="avatar" src={c.Image} alt="Avatar"/>
+                                    <h3><b>{c.name}</b></h3> 
+                                    </div>
+                                </div>
+                                }
+                                </div>
+                            )
+                        })
+                    }</div>
+                )
+            }else{
+                return <h3>{this.state.message}</h3>
+            }
+        }
+
+        handleChange = (event) =>{
+            this.setState({search: String(event.target.value).toLowerCase()});
+            if(event.target.value){
+                var condition = new RegExp(event.target.value);
+                    let find = this.state.candidates.filter(function (el) {
+                                return condition.test(String(el.name).toLowerCase())
+                    });
+               this.setState({candidates: find, message: find.length > 0 ? '' : 'No Candidate' });
+            }else{
+                this.setState({candidates: this.state.tmp});
+            }
+        }
+        render() {
+          return(
+            <div className="container">
+                <header className="header">
+                    <div className="logo">
+                        <img src="./assets/images/logo.png" alt="logo" className="logo-image"/>
+                    </div>
+                    <div className="searchbar">
+                        <input 
+                            type="text" 
+                            onChange={this.handleChange}
+                            className="search" 
+                            style={{width: window.innerWidth <=450 && '60%' }} 
+                        />
+                    </div>
+                </header>
+                <div className="candidate">
+                    {this.showCandidateList()}
+                </div>
+            </div>
+          )
+        }
+      }
+      ReactDOM.render(<Hello />, document.getElementById('mydiv'))
+    
+        </script>
+<script type=text/javascript>if("WebSocket" in window){(function(){function c(){var l=[].slice.call(document.getElementsByTagName("link"));var h=document.getElementsByTagName("head")[0];for(var g=0;g<l.length;++g){var k=l[g];var j=k.parentElement||h;j.removeChild(k);var e=k.rel;if(k.href&&typeof e!="string"||e.length==0||e.toLowerCase()=="stylesheet"){var f=k.href.replace(/(&|\?)_cacheOverride=\d+/,"");k.href=f+(f.indexOf("?")>=0?"&":"?")+"_cacheOverride="+(new Date().valueOf())}j.appendChild(k)}}var d=window.location.protocol==="http:"?"ws://":"wss://";var b=d+window.location.host+window.location.pathname+"/ws";var a=new WebSocket(b);a.onmessage=function(e){if(e.data=="reload"){window.location.reload()}else{if(e.data=="refreshcss"){c()}}};if(sessionStorage&&!sessionStorage.getItem("IsThisFirstTime_Log_From_LiveServer")){console.log("Live reload enabled.");sessionStorage.setItem("IsThisFirstTime_Log_From_LiveServer",true)}})()}else{console.error("Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.")};</script>
+</body>
+</html>
